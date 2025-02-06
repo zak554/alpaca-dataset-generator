@@ -44,6 +44,15 @@ def generate_dataset(input_texts: List[str], models: Dict) -> List[Dict[str, Any
                 break
 
     return examples[:CONFIG['num_examples']]
+def truncate_text(text: str, tokenizer, max_length: int = 512) -> str:
+    """
+    Truncate text to a maximum number of tokens.
+    """
+    tokens = tokenizer.tokenize(text)
+    if len(tokens) > max_length:
+        tokens = tokens[:max_length]
+    truncated_text = tokenizer.convert_tokens_to_string(tokens)
+    return truncated_text
 
 def generate_batch(models: Dict, texts: List[str], instruction_types: List[str], instructions: List[str]) -> List[Dict[str, Any]]:
     batch_examples = []
