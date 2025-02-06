@@ -74,6 +74,10 @@ def generate_gpt2_output(
     max_length: int = 50
 ) -> str:
     """Generate output using a GPT-2 model."""
+    # Ensure pad_token is set
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token  # Critical fix
+
     inputs = tokenizer(prompt, return_tensors="pt", padding=True, truncation=True, max_length=512)
     input_ids = inputs.input_ids.to(device)
     attention_mask = inputs.attention_mask.to(device)
@@ -85,7 +89,7 @@ def generate_gpt2_output(
             max_length=input_ids.shape[1] + max_length,
             num_return_sequences=1,
             no_repeat_ngram_size=2,
-            pad_token_id=tokenizer.eos_token_id,
+            pad_token_id=tokenizer.eos_token_id,  # Already correct
             do_sample=True,
             top_k=50,
             top_p=0.95,
@@ -93,7 +97,6 @@ def generate_gpt2_output(
     
     generated_text = tokenizer.decode(outputs[0][input_ids.shape[1]:], skip_special_tokens=True)
     return generated_text.strip()
-
 def generate_t5_output(
     tokenizer: PreTrainedTokenizer,
     model: PreTrainedModel,
