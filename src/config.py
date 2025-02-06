@@ -19,7 +19,7 @@ CONFIG = {
     'models': {
         'gpt2': 'gpt2-xl',
         't5': 't5-large',
-        'sentiment': 'bert-base-multilingual-uncased-sentiment',
+        'sentiment': 'distilbert/distilbert-base-multilingual-cased',
         'sentence': 'all-mpnet-base-v2'
     }
 }
