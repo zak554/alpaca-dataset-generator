@@ -47,26 +47,39 @@ def generate_dataset(input_texts: List[str], models: Dict) -> List[Dict[str, Any
 
 def generate_batch(models: Dict, texts: List[str], instruction_types: List[str], instructions: List[str]) -> List[Dict[str, Any]]:
     batch_examples = []
-    
     for text, instruction_type, instruction in zip(texts, instruction_types, instructions):
+        # Truncate the input text to 512 tokens
+        truncated_text = truncate_text(text, models["t5_tokenizer"], max_length=512)
+        
         if instruction_type == "summarize":
-            output = generate_t5_output(models["t5_tokenizer"], models["t5_model"], "summarize", text, CONFIG['device'])
+            output = generate_t5_output(models["t5_tokenizer"], models["t5_model"], "summarize", truncated_text, CONFIG['device'])
         elif instruction_type == "paraphrase":
-            output = generate_t5_output(models["t5_tokenizer"], models["t5_model"], "paraphrase", text, CONFIG['device'])
+            output = generate_t5_output(models["t5_tokenizer"], models["t5_model"], "paraphrase", truncated_text, CONFIG['device'])
         elif instruction_type == "keyword":
-            keywords = extract_keywords(text)
+            keywords = extract_keywords(truncated_text)
             output = ", ".join(keywords)
         elif instruction_type == "sentiment":
-            sentiment = models["sentiment_pipeline"](text)[0]
-            explanation = generate_gpt2_output(models["gpt2_tokenizer"], models["gpt2_model"], f"Explain why the sentiment is {sentiment['label']}: ", CONFIG['device'])
+            # Truncate text for sentiment analysis
+            sentiment = models["sentiment_pipeline"](truncated_text)[0]
+            explanation = generate_gpt2_output(
+                models["gpt2_tokenizer"],
+                models["gpt2_model"],
+                f"Explain why the sentiment is {sentiment['label']}: ",
+                CONFIG['device']
+            )
             output = f"{sentiment['label'].capitalize()}. {explanation}"
         else:
-            prompt = f"{instruction}\n\nText: {text}\n\nOutput:"
-            output = generate_gpt2_output(models["gpt2_tokenizer"], models["gpt2_model"], prompt, CONFIG['device'])
+            prompt = f"{instruction}\n\nText: {truncated_text}\n\nOutput:"
+            output = generate_gpt2_output(
+                models["gpt2_tokenizer"],
+                models["gpt2_model"],
+                prompt,
+                CONFIG['device']
+            )
 
         batch_examples.append({
             "instruction": instruction,
-            "input": text,
+            "input": text,  # Use original text for the dataset
             "output": output,
             "instruction_type": instruction_type
         })
