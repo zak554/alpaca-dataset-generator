@@ -18,7 +18,7 @@ CONFIG = {
     'device': torch.device("cuda" if torch.cuda.is_available() else "cpu"),
     'models': {
         'gpt2': 'gpt2-xl',
-        't5': 't5-11b',
+        't5': 't5-large',
         'sentiment': 'bert-base-multilingual-uncased-sentiment',
         'sentence': 'all-mpnet-base-v2'
     }
